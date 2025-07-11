@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Layout, Card, Input, Spin } from 'antd'
 const { Header, Footer, Content } = Layout
 import { Col, Row } from 'antd';
@@ -7,9 +7,19 @@ import './App.css'
 
 function App() {
   const [query, setQuery] = useState('');
-  const [debouncedQuery, setDebouncedQuery] = useState(query);
-  const [movies, setMovies] = useState([])
   const [loading, setLoading] = useState(false)
+  const [movies, setMovies] = useState([])
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+
+  const fetchData = async () => {
+    if (!debouncedQuery) return;
+    setLoading(true)
+    const response = await fetch(`http://localhost:3000/api/search?query=${debouncedQuery}`)
+    const json = await response.json()
+    setMovies(json.movies)
+    setLoading(false)
+    console.log(json)
+  }
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -21,22 +31,12 @@ function App() {
     };
   }, [query]);
 
-  const fetchData = async () => {
-    setLoading(true)
-    const response = await fetch(`http://localhost:3000/api/search?query=${debouncedQuery}`)
-    const json = await response.json()
-    setMovies(json.movies)
-    setLoading(false)
-    console.log(json)
-  }
-
   useEffect(() => {
-    console.log('Searching for:', debouncedQuery);
-    fetchData()
-  }, [debouncedQuery]);
+    console.log(debouncedQuery)
+    fetchData();
+  }, [debouncedQuery])
 
-  console.log(movies)
-
+ 
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Header style={{ color: 'white' }}>SEARCH AUTOCOMPLETE</Header>
@@ -69,7 +69,6 @@ function App() {
       </Content>
       <Footer>footer</Footer>
     </Layout>
-
   )
 }
 
